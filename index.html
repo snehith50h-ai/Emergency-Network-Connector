@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Emergency Network Connector - An interactive visualization of Kruskal's Minimum Spanning Tree algorithm for emergency communication networks. Built as a laboratory project for B.V. Raju Institute of Technology.">
+    <title>Emergency Network Connector | Kruskal's MST</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="bg-grid"></div>
+    <div class="bg-glow bg-glow-1"></div>
+    <div class="bg-glow bg-glow-2"></div>
+    <div class="bg-glow bg-glow-3"></div>
+
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-brand">
+            <div class="nav-icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="5" r="2"/>
+                    <circle cx="5" cy="19" r="2"/>
+                    <circle cx="19" cy="19" r="2"/>
+                    <line x1="12" y1="7" x2="5" y2="17"/>
+                    <line x1="12" y1="7" x2="19" y2="17"/>
+                    <line x1="5" y1="19" x2="19" y2="19"/>
+                </svg>
+            </div>
+            <span>ENC<span class="accent-dot">.</span></span>
+        </div>
+        <div class="nav-links">
+            <a href="#hero" class="nav-link active" data-section="hero">Home</a>
+            <a href="#visualizer" class="nav-link" data-section="visualizer">Visualizer</a>
+            <a href="#algorithm" class="nav-link" data-section="algorithm">Algorithm</a>
+            <a href="#about" class="nav-link" data-section="about">About</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" id="hero">
+        <div class="hero-content">
+            <div class="hero-badge">
+                <span class="badge-pulse"></span>
+                <span>Laboratory Project — ADA (Design &amp; Analysis of Algorithms)</span>
+            </div>
+            <h1 class="hero-title">
+                <span class="title-line">Emergency</span>
+                <span class="title-line gradient-text">Network Connector</span>
+            </h1>
+            <p class="hero-subtitle">
+                An interactive visualization of <strong>Kruskal's Minimum Spanning Tree</strong> algorithm 
+                for building cost-optimal emergency communication networks during disasters.
+            </p>
+            <div class="hero-actions">
+                <a href="#visualizer" class="btn btn-primary" id="btn-start">
+                    <span>Launch Visualizer</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                    </svg>
+                </a>
+                <a href="#algorithm" class="btn btn-secondary" id="btn-learn">
+                    <span>Learn Algorithm</span>
+                </a>
+            </div>
+            <div class="hero-stats">
+                <div class="stat">
+                    <span class="stat-value">O(E log E)</span>
+                    <span class="stat-label">Time Complexity</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat">
+                    <span class="stat-value">O(V + E)</span>
+                    <span class="stat-label">Space Complexity</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat">
+                    <span class="stat-value">Greedy</span>
+                    <span class="stat-label">Algorithm Type</span>
+                </div>
+            </div>
+        </div>
+        <div class="hero-visual">
+            <canvas id="hero-canvas"></canvas>
+        </div>
+    </section>
+
+    <!-- Visualizer Section -->
+    <section class="visualizer-section" id="visualizer">
+        <div class="section-header">
+            <span class="section-tag">Interactive Tool</span>
+            <h2 class="section-title">Network Visualizer</h2>
+            <p class="section-desc">Add emergency sites and communication links, then watch Kruskal's algorithm find the optimal network in real time.</p>
+        </div>
+
+        <div class="visualizer-layout">
+            <!-- Left Panel: Controls -->
+            <div class="control-panel">
+                <!-- Add Location -->
+                <div class="panel-card" id="panel-locations">
+                    <div class="panel-header">
+                        <div class="panel-icon icon-location">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                                <circle cx="12" cy="10" r="3"/>
+                            </svg>
+                        </div>
+                        <h3>Locations</h3>
+                        <span class="panel-count" id="location-count">0</span>
+                    </div>
+                    <div class="panel-body">
+                        <div class="input-group">
+                            <input type="text" id="location-name" placeholder="e.g., Hospital" class="input-field" maxlength="20">
+                            <button class="btn btn-add" id="btn-add-location" title="Add Location">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="location-list" id="location-list"></div>
+                    </div>
+                </div>
+
+                <!-- Add Link -->
+                <div class="panel-card" id="panel-links">
+                    <div class="panel-header">
+                        <div class="panel-icon icon-link">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                            </svg>
+                        </div>
+                        <h3>Links</h3>
+                        <span class="panel-count" id="link-count">0</span>
+                    </div>
+                    <div class="panel-body">
+                        <div class="input-row">
+                            <select id="link-from" class="input-field select-field">
+                                <option value="">From</option>
+                            </select>
+                            <select id="link-to" class="input-field select-field">
+                                <option value="">To</option>
+                            </select>
+                            <input type="number" id="link-cost" placeholder="Cost" class="input-field cost-field" min="1">
+                            <button class="btn btn-add" id="btn-add-link" title="Add Link">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="link-list" id="link-list"></div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="panel-card panel-actions">
+                    <button class="btn btn-run" id="btn-run">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <polygon points="5 3 19 12 5 21 5 3"/>
+                        </svg>
+                        <span>Run Kruskal's Algorithm</span>
+                    </button>
+                    <div class="action-row">
+                        <button class="btn btn-outline" id="btn-sample">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                <polyline points="14 2 14 8 20 8"/>
+                            </svg>
+                            Load Sample
+                        </button>
+                        <button class="btn btn-outline btn-danger" id="btn-reset">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="23 4 23 10 17 10"/>
+                                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                            </svg>
+                            Reset All
+                        </button>
+                    </div>
+                    <div class="speed-control">
+                        <label for="speed-slider">Animation Speed</label>
+                        <input type="range" id="speed-slider" min="1" max="5" value="3" class="slider">
+                        <div class="speed-labels">
+                            <span>Slow</span><span>Fast</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Center: Graph Canvas -->
+            <div class="canvas-wrapper">
+                <div class="canvas-top-bar">
+                    <div class="canvas-hint">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+                        </svg>
+                        <span>Drag nodes to reposition</span>
+                    </div>
+                    <div class="canvas-actions">
+                        <button class="canvas-action-btn" id="btn-autolayout" title="Re-arrange in circular layout">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+                            </svg>
+                            <span>Auto Layout</span>
+                        </button>
+                    </div>
+                </div>
+                <canvas id="graph-canvas"></canvas>
+                <div class="canvas-legend">
+                    <div class="legend-chip"><span class="legend-color legend-default"></span><span>Candidate</span></div>
+                    <div class="legend-chip"><span class="legend-color legend-examining"></span><span>Evaluating</span></div>
+                    <div class="legend-chip"><span class="legend-color legend-accepted"></span><span>MST Edge</span></div>
+                    <div class="legend-chip"><span class="legend-color legend-rejected"></span><span>Cycle (Rejected)</span></div>
+                </div>
+                <div class="canvas-overlay" id="canvas-overlay">
+                    <div class="overlay-content">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.5">
+                            <circle cx="12" cy="5" r="2"/>
+                            <circle cx="5" cy="19" r="2"/>
+                            <circle cx="19" cy="19" r="2"/>
+                            <line x1="12" y1="7" x2="5" y2="17" stroke-dasharray="3 3"/>
+                            <line x1="12" y1="7" x2="19" y2="17" stroke-dasharray="3 3"/>
+                            <line x1="5" y1="19" x2="19" y2="19" stroke-dasharray="3 3"/>
+                        </svg>
+                        <p>Add locations and links to begin,<br>or <button class="overlay-btn" id="btn-sample-overlay">load the sample network</button></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel: Results -->
+            <div class="results-panel" id="results-panel">
+                <!-- Step Trace -->
+                <div class="panel-card" id="panel-trace">
+                    <div class="panel-header">
+                        <div class="panel-icon icon-trace">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                            </svg>
+                        </div>
+                        <h3>Algorithm Trace</h3>
+                    </div>
+                    <div class="panel-body">
+                        <div class="trace-log" id="trace-log">
+                            <div class="trace-placeholder">Run the algorithm to see the step-by-step trace.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MST Result -->
+                <div class="panel-card" id="panel-result">
+                    <div class="panel-header">
+                        <div class="panel-icon icon-result">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                <polyline points="22 4 12 14.01 9 11.01"/>
+                            </svg>
+                        </div>
+                        <h3>MST Result</h3>
+                    </div>
+                    <div class="panel-body">
+                        <div class="result-summary" id="result-summary">
+                            <div class="result-placeholder">Results will appear after running the algorithm.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Algorithm Section -->
+    <section class="algorithm-section" id="algorithm">
+        <div class="section-header">
+            <span class="section-tag">How It Works</span>
+            <h2 class="section-title">Kruskal's Algorithm</h2>
+            <p class="section-desc">A greedy algorithm that builds the minimum spanning tree by repeatedly selecting the cheapest edge that doesn't form a cycle.</p>
+        </div>
+
+        <div class="algo-grid">
+            <div class="algo-step">
+                <div class="step-number">01</div>
+                <div class="step-content">
+                    <h3>Sort All Edges</h3>
+                    <p>Sort all candidate communication links by their installation cost in non-decreasing order. This ensures we always consider the cheapest available option first.</p>
+                    <div class="step-complexity">O(E log E)</div>
+                </div>
+            </div>
+            <div class="algo-step">
+                <div class="step-number">02</div>
+                <div class="step-content">
+                    <h3>Initialize Disjoint Sets</h3>
+                    <p>Create a Disjoint Set (Union-Find) structure where each location starts in its own set. This tracks which sites are already connected.</p>
+                    <div class="step-complexity">O(V)</div>
+                </div>
+            </div>
+            <div class="algo-step">
+                <div class="step-number">03</div>
+                <div class="step-content">
+                    <h3>Examine Next Edge</h3>
+                    <p>Take the next cheapest link from the sorted list. Check if the two endpoints belong to different components using <code>find()</code>.</p>
+                    <div class="step-complexity">O(α(V)) ≈ O(1)</div>
+                </div>
+            </div>
+            <div class="algo-step">
+                <div class="step-number">04</div>
+                <div class="step-content">
+                    <h3>Accept or Reject</h3>
+                    <p>If the endpoints are in different sets, accept the link and <code>union()</code> the sets. If they're in the same set, reject it — it would form a cycle.</p>
+                    <div class="step-complexity">O(α(V)) ≈ O(1)</div>
+                </div>
+            </div>
+            <div class="algo-step">
+                <div class="step-number">05</div>
+                <div class="step-content">
+                    <h3>Repeat Until Done</h3>
+                    <p>Continue until <strong>V − 1</strong> edges have been accepted (all sites connected) or all edges are exhausted (network is disconnected).</p>
+                    <div class="step-complexity">≤ E iterations</div>
+                </div>
+            </div>
+            <div class="algo-step">
+                <div class="step-number">06</div>
+                <div class="step-content">
+                    <h3>Output the MST</h3>
+                    <p>The selected edges form the Minimum Spanning Tree — the cheapest way to connect all reachable emergency sites.</p>
+                    <div class="step-complexity">Total: O(E log V)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pseudocode -->
+        <div class="pseudocode-card">
+            <div class="code-header">
+                <div class="code-dots">
+                    <span></span><span></span><span></span>
+                </div>
+                <span class="code-title">kruskal_mst.pseudo</span>
+            </div>
+            <pre class="code-block"><code><span class="kw">KRUSKAL-MST</span>(G):
+    A ← ∅                              <span class="cm">// set of MST edges</span>
+    <span class="kw">for each</span> vertex v <span class="kw">in</span> G.V:
+        <span class="fn">MAKE-SET</span>(v)                    <span class="cm">// each vertex is its own component</span>
+    <span class="fn">SORT</span>(G.E) <span class="kw">by</span> weight              <span class="cm">// sort edges in non-decreasing order</span>
+    <span class="kw">for each</span> edge (u, v, w) <span class="kw">in</span> sorted G.E:
+        <span class="kw">if</span> <span class="fn">FIND</span>(u) ≠ <span class="fn">FIND</span>(v):        <span class="cm">// u and v in different components?</span>
+            A ← A ∪ {(u, v, w)}        <span class="cm">// accept this edge</span>
+            <span class="fn">UNION</span>(u, v)                 <span class="cm">// merge components</span>
+            <span class="kw">if</span> |A| = |V| − 1: <span class="kw">break</span>   <span class="cm">// tree is complete</span>
+    <span class="kw">return</span> A</code></pre>
+        </div>
+
+        <!-- Data Structures -->
+        <div class="ds-grid">
+            <div class="ds-card">
+                <div class="ds-icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+                        <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+                    </svg>
+                </div>
+                <h4>Union-Find (DSU)</h4>
+                <p>Disjoint Set with <strong>path compression</strong> and <strong>union by rank</strong> for near-constant-time cycle detection.</p>
+            </div>
+            <div class="ds-card">
+                <div class="ds-icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
+                        <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
+                    </svg>
+                </div>
+                <h4>Edge List</h4>
+                <p>All candidate links stored as <strong>(src, dest, cost)</strong> tuples, sorted by cost for greedy selection.</p>
+            </div>
+            <div class="ds-card">
+                <div class="ds-icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <circle cx="12" cy="5" r="2.5"/><circle cx="5" cy="19" r="2.5"/><circle cx="19" cy="19" r="2.5"/>
+                        <line x1="12" y1="7.5" x2="5" y2="16.5"/><line x1="12" y1="7.5" x2="19" y2="16.5"/>
+                    </svg>
+                </div>
+                <h4>Spanning Tree</h4>
+                <p>Exactly <strong>V − 1</strong> edges connecting all vertices with the <strong>minimum total weight</strong>.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="about-section" id="about">
+        <div class="section-header">
+            <span class="section-tag">Project Details</span>
+            <h2 class="section-title">About This Project</h2>
+            <p class="section-desc">Submitted in partial fulfillment of the laboratory project for B.Tech in Computer Science and Engineering.</p>
+        </div>
+
+        <div class="about-grid">
+            <div class="about-card team-card">
+                <h3>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                    Team Members
+                </h3>
+                <div class="team-list">
+                    <div class="team-member"><span class="member-id">25211A05L2</span><span class="member-name">Gurram Yashwith</span></div>
+                    <div class="team-member"><span class="member-id">25211A05L3</span><span class="member-name">Gutam Vishwanath</span></div>
+                    <div class="team-member"><span class="member-id">25211A05L4</span><span class="member-name">Hanumanth Tanish Kumar</span></div>
+                    <div class="team-member"><span class="member-id">25211A05L5</span><span class="member-name">Harini Marepally</span></div>
+                    <div class="team-member"><span class="member-id">25211A05L6</span><span class="member-name">Hatti Pavan Kumar</span></div>
+                    <div class="team-member"><span class="member-id">25211A05L7</span><span class="member-name">Hemanth Yadav Ambari</span></div>
+                    <div class="team-member"><span class="member-id">25211A05L8</span><span class="member-name">Humnabad Snehith Kumar</span></div>
+                </div>
+            </div>
+
+            <div class="about-card guide-card">
+                <h3>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                    </svg>
+                    Under Guidance
+                </h3>
+                <div class="guide-info">
+                    <div class="guide-name">Ms. Priya Darshini Ch</div>
+                    <div class="guide-title">Assistant Professor, CSE Department</div>
+                </div>
+                <div class="institution">
+                    <div class="inst-name">B.V. Raju Institute of Technology</div>
+                    <div class="inst-detail">UGC Autonomous, Accredited by NBA & NAAC</div>
+                    <div class="inst-detail">Vishnupur, Narspur, Medak (Dist.), Telangana — 502313</div>
+                    <div class="inst-year">Academic Year: 2026 – 2027</div>
+                </div>
+            </div>
+
+            <div class="about-card refs-card">
+                <h3>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                    </svg>
+                    Key References
+                </h3>
+                <div class="ref-list">
+                    <div class="ref-item">
+                        <span class="ref-num">[1]</span>
+                        <span>Cormen et al., <em>"Introduction to Algorithms"</em>, 4th Ed., MIT Press, 2022.</span>
+                    </div>
+                    <div class="ref-item">
+                        <span class="ref-num">[2]</span>
+                        <span>Kruskal, J.B., <em>"On the Shortest Spanning Subtree…"</em>, 1956.</span>
+                    </div>
+                    <div class="ref-item">
+                        <span class="ref-num">[3]</span>
+                        <span>Prim, R.C., <em>"Shortest Connection Networks…"</em>, 1957.</span>
+                    </div>
+                    <div class="ref-item">
+                        <span class="ref-num">[4]</span>
+                        <span>Tarjan, R.E., <em>"Efficiency of a Good But Not Linear Set Union Algorithm"</em>, 1975.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <span>Emergency Network Connector</span>
+                <span class="footer-sep">•</span>
+                <span>Kruskal's MST</span>
+            </div>
+            <div class="footer-info">B.V. Raju Institute of Technology — CSE Dept. — 2026-2027</div>
+        </div>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
