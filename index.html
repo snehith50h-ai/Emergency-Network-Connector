@@ -231,19 +231,59 @@
 
             <!-- Right Panel: Results -->
             <div class="results-panel" id="results-panel">
-                <!-- Step Trace -->
+                <!-- Step Trace & Live Code -->
                 <div class="panel-card" id="panel-trace">
                     <div class="panel-header">
-                        <div class="panel-icon icon-trace">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-                            </svg>
+                        <div class="panel-tabs">
+                            <button class="panel-tab active" id="tab-code" data-target="code-tracker-view">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                    <polyline points="16 18 22 12 16 6"/>
+                                    <polyline points="8 6 2 12 8 18"/>
+                                </svg>
+                                <span>Live Code</span>
+                            </button>
+                            <button class="panel-tab" id="tab-trace" data-target="trace-view">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                                </svg>
+                                <span>Trace Log</span>
+                            </button>
                         </div>
-                        <h3>Algorithm Trace</h3>
                     </div>
                     <div class="panel-body">
-                        <div class="trace-log" id="trace-log">
-                            <div class="trace-placeholder">Run the algorithm to see the step-by-step trace.</div>
+                        <!-- Live Code Tracker -->
+                        <div class="code-tracker-view" id="code-tracker-view">
+                            <div class="live-vars-bar">
+                                <div class="var-badge" id="var-edge"><span>Edge:</span> <strong>Idle</strong></div>
+                                <div class="var-badge" id="var-cost"><span>Cost:</span> <strong>—</strong></div>
+                                <div class="var-badge" id="var-cycle"><span>Cycle:</span> <strong>—</strong></div>
+                            </div>
+                            <div class="code-execution-box" id="code-execution-box">
+                                <div class="code-line" data-line="1"><span class="line-num">01</span><span class="line-text"><span class="kw">A</span> = [] <span class="cm">// MST edges</span></span></div>
+                                <div class="code-line" data-line="2"><span class="line-num">02</span><span class="line-text"><span class="fn">MAKE-SET</span>(v) <span class="kw">for each</span> v</span></div>
+                                <div class="code-line" data-line="3"><span class="line-num">03</span><span class="line-text"><span class="fn">SORT</span>(E) <span class="kw">by</span> cost ascending</span></div>
+                                <div class="code-line" data-line="4"><span class="line-num">04</span><span class="line-text"><span class="kw">for each</span> (u, v, cost) <span class="kw">in</span> E:</span></div>
+                                <div class="code-line" data-line="5"><span class="line-num">05</span><span class="line-text">&nbsp;&nbsp;rootU = <span class="fn">FIND</span>(u)</span></div>
+                                <div class="code-line" data-line="6"><span class="line-num">06</span><span class="line-text">&nbsp;&nbsp;rootV = <span class="fn">FIND</span>(v)</span></div>
+                                <div class="code-line" data-line="7"><span class="line-num">07</span><span class="line-text">&nbsp;&nbsp;<span class="kw">if</span> rootU ≠ rootV:</span></div>
+                                <div class="code-line" data-line="8"><span class="line-num">08</span><span class="line-text">&nbsp;&nbsp;&nbsp;&nbsp;A.<span class="fn">push</span>((u, v, cost))</span></div>
+                                <div class="code-line" data-line="9"><span class="line-num">09</span><span class="line-text">&nbsp;&nbsp;&nbsp;&nbsp;<span class="fn">UNION</span>(rootU, rootV)</span></div>
+                                <div class="code-line" data-line="10"><span class="line-num">10</span><span class="line-text">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">if</span> |A| == |V| - 1: <span class="kw">break</span></span></div>
+                                <div class="code-line" data-line="11"><span class="line-num">11</span><span class="line-text">&nbsp;&nbsp;<span class="kw">else</span>:</span></div>
+                                <div class="code-line" data-line="12"><span class="line-num">12</span><span class="line-text">&nbsp;&nbsp;&nbsp;&nbsp;<span class="fn">REJECT</span>(u, v) <span class="cm">// Cycle!</span></span></div>
+                                <div class="code-line" data-line="13"><span class="line-num">13</span><span class="line-text"><span class="kw">return</span> A</span></div>
+                            </div>
+                            <div class="live-step-status" id="live-step-status">
+                                <span class="status-pulse-dot" id="status-pulse-dot"></span>
+                                <span class="status-step-msg" id="status-step-msg">Ready. Click "Run Kruskal's Algorithm" to watch code execute live.</span>
+                            </div>
+                        </div>
+
+                        <!-- Step Trace Log -->
+                        <div class="trace-view hidden" id="trace-view">
+                            <div class="trace-log" id="trace-log">
+                                <div class="trace-placeholder">Run the algorithm to see the step-by-step trace.</div>
+                            </div>
                         </div>
                     </div>
                 </div>

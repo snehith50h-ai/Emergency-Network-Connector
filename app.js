@@ -94,7 +94,17 @@ const dom = {
     canvasOverlay: document.getElementById('canvas-overlay'),
     btnAutoLayout: document.getElementById('btn-autolayout'),
 
-    // Results
+    // Results & Live Code Tracker
+    tabCode: document.getElementById('tab-code'),
+    tabTrace: document.getElementById('tab-trace'),
+    codeTrackerView: document.getElementById('code-tracker-view'),
+    traceView: document.getElementById('trace-view'),
+    varEdge: document.getElementById('var-edge'),
+    varCost: document.getElementById('var-cost'),
+    varCycle: document.getElementById('var-cycle'),
+    statusPulseDot: document.getElementById('status-pulse-dot'),
+    statusStepMsg: document.getElementById('status-step-msg'),
+    codeExecutionBox: document.getElementById('code-execution-box'),
     traceLog: document.getElementById('trace-log'),
     resultSummary: document.getElementById('result-summary'),
     navbar: document.getElementById('navbar'),
@@ -639,7 +649,63 @@ function roundRect(ctx, x, y, w, h, r) {
     ctx.closePath();
 }
 
-// ===== Kruskal's Algorithm (Animated) =====
+// ===== Live Code Execution Tracker =====
+
+function highlightCodeLine(lineNums, stateClass = 'active-examining') {
+    document.querySelectorAll('.code-line').forEach(el => {
+        el.className = 'code-line';
+    });
+
+    const lines = Array.isArray(lineNums) ? lineNums : [lineNums];
+    lines.forEach(n => {
+        const el = document.querySelector(`.code-line[data-line="${n}"]`);
+        if (el) {
+            el.classList.add(stateClass);
+        }
+    });
+}
+
+function clearCodeHighlights() {
+    document.querySelectorAll('.code-line').forEach(el => {
+        el.className = 'code-line';
+    });
+}
+
+function updateLiveVars({ edge = 'Idle', cost = '—', cycle = '—', badgeState = '' }) {
+    if (dom.varEdge) dom.varEdge.innerHTML = `<span>Edge:</span> <strong>${escapeHtml(edge)}</strong>`;
+    if (dom.varCost) dom.varCost.innerHTML = `<span>Cost:</span> <strong>${escapeHtml(String(cost))}</strong>`;
+    if (dom.varCycle) {
+        dom.varCycle.innerHTML = `<span>Cycle:</span> <strong>${escapeHtml(cycle)}</strong>`;
+        dom.varCycle.className = `var-badge ${badgeState ? 'highlight-' + badgeState : ''}`;
+    }
+}
+
+function updateLiveStepStatus(msg, pulseState = '') {
+    if (dom.statusStepMsg) dom.statusStepMsg.textContent = msg;
+    if (dom.statusPulseDot) {
+        dom.statusPulseDot.className = `status-pulse-dot ${pulseState ? 'pulse-' + pulseState : ''}`;
+    }
+}
+
+function initTabs() {
+    if (dom.tabCode && dom.tabTrace) {
+        dom.tabCode.addEventListener('click', () => {
+            dom.tabCode.classList.add('active');
+            dom.tabTrace.classList.remove('active');
+            if (dom.codeTrackerView) dom.codeTrackerView.classList.remove('hidden');
+            if (dom.traceView) dom.traceView.classList.add('hidden');
+        });
+
+        dom.tabTrace.addEventListener('click', () => {
+            dom.tabTrace.classList.add('active');
+            dom.tabCode.classList.remove('active');
+            if (dom.traceView) dom.traceView.classList.remove('hidden');
+            if (dom.codeTrackerView) dom.codeTrackerView.classList.add('hidden');
+        });
+    }
+}
+
+// ===== Kruskal's Algorithm (Animated with Live Code Tracking) =====
 
 async function runKruskal() {
     if (state.isRunning) return;
@@ -662,7 +728,15 @@ async function runKruskal() {
     const sortedLinks = [...state.links].sort((a, b) => a.cost - b.cost);
     const ds = new DisjointSet(n);
 
-    // Trace: Sorting
+    // Live Code: Init & Sort
+    highlightCodeLine([1, 2], 'active-sorting');
+    updateLiveVars({ edge: 'MAKE-SET', cost: '—', cycle: 'Initialized' });
+    updateLiveStepStatus(`MAKE-SET: Initialized ${n} disjoint sets for all emergency stations.`, 'examining');
+    await sleep(getAnimDelay() * 0.4);
+
+    highlightCodeLine(3, 'active-sorting');
+    updateLiveVars({ edge: `Sorted ${sortedLinks.length} links`, cost: 'E log E', cycle: 'Ascending' });
+    updateLiveStepStatus(`SORT: Sorted all ${sortedLinks.length} candidate communication links by weight in non-decreasing order.`, 'examining');
     addTraceEntry('—', `Sorted ${sortedLinks.length} links by cost`, 'sorting');
     await sleep(getAnimDelay());
 
@@ -675,6 +749,15 @@ async function runKruskal() {
         renderGraph();
         const fromName = state.locations[link.src].name;
         const toName = state.locations[link.dest].name;
+
+        highlightCodeLine([4, 5, 6], 'active-examining');
+        updateLiveVars({
+            edge: `${fromName} ↔ ${toName}`,
+            cost: link.cost,
+            cycle: 'Testing FIND()',
+            badgeState: 'active'
+        });
+        updateLiveStepStatus(`Testing edge (${fromName} — ${toName}, cost ${link.cost}). Checking if endpoints belong to different components...`, 'examining');
         addTraceEntry(step, `Examining <strong>${fromName} — ${toName}</strong> (cost ${link.cost})`, 'sorting');
         await sleep(getAnimDelay());
 
@@ -683,10 +766,28 @@ async function runKruskal() {
             link.state = 'accepted';
             state.mstLinks.push(link);
             state.totalCost += link.cost;
+
+            highlightCodeLine([7, 8, 9], 'active-accepted');
+            updateLiveVars({
+                edge: `${fromName} ↔ ${toName}`,
+                cost: link.cost,
+                cycle: 'No (Accepted ✓)',
+                badgeState: 'accept'
+            });
+            updateLiveStepStatus(`Accept! rootU ≠ rootV (different components). UNION performed. Added to MST (${state.mstLinks.length}/${n - 1} edges, Cost: ${state.totalCost}).`, 'accepted');
             addTraceEntry('✓', `<strong>Accept</strong> ${fromName} — ${toName} (different components)`, 'accepted');
         } else {
             // Rejected
             link.state = 'rejected';
+
+            highlightCodeLine([11, 12], 'active-rejected');
+            updateLiveVars({
+                edge: `${fromName} ↔ ${toName}`,
+                cost: link.cost,
+                cycle: 'YES (Cycle ✗)',
+                badgeState: 'reject'
+            });
+            updateLiveStepStatus(`Reject! rootU == rootV. ${fromName} and ${toName} are already in the same component. Discarding cycle!`, 'rejected');
             addTraceEntry('✗', `<strong>Reject</strong> ${fromName} — ${toName} (would form cycle)`, 'rejected');
         }
 
@@ -695,13 +796,32 @@ async function runKruskal() {
 
         // Check if MST is complete
         if (state.mstLinks.length === n - 1) {
+            highlightCodeLine(10, 'active-accepted');
+            updateLiveVars({
+                edge: 'MST Complete',
+                cost: state.totalCost,
+                cycle: 'Optimal MST ✓',
+                badgeState: 'accept'
+            });
+            updateLiveStepStatus(`Tree complete! Exactly ${n - 1} edges selected connecting all ${n} emergency stations with minimum total cost ${state.totalCost}.`, 'accepted');
             addTraceEntry('★', `MST complete — <strong>${n - 1} edges</strong> selected`, 'complete');
+            await sleep(getAnimDelay() * 0.5);
             break;
         }
     }
 
     if (state.mstLinks.length < n - 1) {
+        highlightCodeLine(13, 'active-rejected');
+        updateLiveVars({
+            edge: 'Forest',
+            cost: state.totalCost,
+            cycle: 'Disconnected',
+            badgeState: 'reject'
+        });
+        updateLiveStepStatus(`Finished: Network is disconnected. Only ${state.mstLinks.length} of ${n - 1} edges could be connected.`, 'rejected');
         addTraceEntry('!', `Network is <strong>disconnected</strong> — only ${state.mstLinks.length} of ${n - 1} edges selected`, 'rejected');
+    } else {
+        highlightCodeLine(13, 'active-accepted');
     }
 
     showResults();
@@ -736,6 +856,9 @@ function clearResults() {
     clearTraceLog();
     dom.traceLog.innerHTML = '<div class="trace-placeholder">Run the algorithm to see the step-by-step trace.</div>';
     clearResultSummary();
+    clearCodeHighlights();
+    updateLiveVars({ edge: 'Idle', cost: '—', cycle: '—' });
+    updateLiveStepStatus('Ready. Click "Run Kruskal\'s Algorithm" to watch code execute live.', '');
     state.mstLinks = [];
     state.totalCost = 0;
 
@@ -1041,6 +1164,7 @@ function init() {
     }
 
     // Init modules
+    initTabs();
     setupCanvasInteraction();
     initHeroCanvas();
     initScrollAnimations();

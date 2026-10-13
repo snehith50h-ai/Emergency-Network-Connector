@@ -30,6 +30,7 @@ By finding the **Minimum Spanning Tree**, the system ensures **100% connectivity
     - 🟡 **Evaluating**: Link currently being tested for cycle formation.
     - 🟢 **Accepted (MST)**: Link connecting two disconnected components.
     - 🔴 **Rejected (Cycle)**: Discarded edge that would create an unnecessary loop.
+- **Live Code Execution Tracker**: Synchronized code inspector showing the active algorithm pseudocode lines lighting up in real time (yellow for evaluation, green for MST union, red for cycle rejection) alongside live variable state badges (`u`, `v`, `cost`, `cycle detected`).
 - **Execution Trace Log**: Live step-by-step commentary detailing every decision made by the disjoint-set `find` and `union` operations.
 - **Customizable Graph Inputs**: Easily add or remove emergency locations and communication links, or load the benchmark 7-location scenario with one click.
 - **Speed Control & Auto Layout**: Adjustable playback speed and one-click circular layout reset.
